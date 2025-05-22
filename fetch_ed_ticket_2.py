@@ -3,8 +3,10 @@ import json
 import datetime
 import re
 
+# --- Jira Config ---
 base_url = "https://jira.atlassian.com"
 search_url = f"{base_url}/rest/api/2/search"
+issue_url = f"{base_url}/rest/api/2/issue"
 
 jql_query = {
     'jql': '''
@@ -13,15 +15,21 @@ jql_query = {
             labels in (override, manual-override)
         ) ORDER BY created DESC
     ''',
-    'maxResults': 20
+    'maxResults': 20,
+    'fields': 'summary,labels,status,reporter,created,comment'
 }
 
+# --- Elasticsearch Config ---
 ELASTIC_URL = "http://localhost:9200/override-logs/_doc"  # Index: override-logs
 
-def extract_ed_ticket(summary):
-    match = re.search(r"(ED-\d+)", summary)
+# --- Helper Function to Extract ED Ticket ---
+def extract_ed_ticket(summary, comments):
+    # Search for ED-XXX in summary and all comments
+    combined_text = summary + " " + " ".join(c['body'] for c in comments)
+    match = re.search(r"(ED-\d+)", combined_text)
     return match.group(1) if match else "N/A"
 
+# --- Fetch from JIRA ---
 response = requests.get(
     search_url,
     headers={"Content-Type": "application/json"},
@@ -39,7 +47,8 @@ if response.status_code == 200:
         for issue in issues:
             fields = issue['fields']
             summary = fields['summary']
-            ed_ticket = extract_ed_ticket(summary)
+            comments = fields.get('comment', {}).get('comments', [])
+            ed_ticket = extract_ed_ticket(summary, comments)
 
             print(f"Issue Key   : {issue['key']}")
             print(f"Summary     : {summary}")
