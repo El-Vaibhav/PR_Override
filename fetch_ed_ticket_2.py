@@ -3,7 +3,6 @@ import json
 import datetime
 import re
 
-# --- Jira Config ---
 base_url = "https://jira.atlassian.com"
 search_url = f"{base_url}/rest/api/2/search"
 
@@ -17,15 +16,12 @@ jql_query = {
     'maxResults': 20
 }
 
-# --- Elasticsearch Config ---
 ELASTIC_URL = "http://localhost:9200/override-logs/_doc"  # Index: override-logs
 
-# --- Helper Function to Extract ED Ticket ---
 def extract_ed_ticket(summary):
     match = re.search(r"(ED-\d+)", summary)
     return match.group(1) if match else "N/A"
 
-# --- Fetch from JIRA ---
 response = requests.get(
     search_url,
     headers={"Content-Type": "application/json"},
@@ -45,7 +41,6 @@ if response.status_code == 200:
             summary = fields['summary']
             ed_ticket = extract_ed_ticket(summary)
 
-            # Print nicely formatted output
             print(f"Issue Key   : {issue['key']}")
             print(f"Summary     : {summary}")
             print(f"Status      : {fields['status']['name']}")
