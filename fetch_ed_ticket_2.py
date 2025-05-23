@@ -3,7 +3,7 @@ import json
 import datetime
 import re
 
-# --- Jira Config ---
+# --- Jira Config ----
 base_url = "https://jira.atlassian.com"
 search_url = f"{base_url}/rest/api/2/search"
 issue_url = f"{base_url}/rest/api/2/issue"
