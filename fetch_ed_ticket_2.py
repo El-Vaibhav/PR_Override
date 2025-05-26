@@ -6,7 +6,6 @@ import re
 # --- Jira Config ----
 base_url = "https://jira.atlassian.com"
 search_url = f"{base_url}/rest/api/2/search"
-issue_url = f"{base_url}/rest/api/2/issue"
 
 jql_query = {
     'jql': '''
@@ -20,11 +19,11 @@ jql_query = {
 }
 
 # --- Elasticsearch Config ---
-ELASTIC_URL = "http://localhost:9200/override-logs/_doc"  # Index: override-logs
+ELASTIC_URL = "http://localhost:9200/override-logs_2/_doc"  # New index for override logs
 
 # --- Helper Function to Extract ED Ticket ---
 def extract_ed_ticket(summary, comments):
-    # Search for ED-XXX in summary and all comments
+    # Search for ED-XXX in summary and comments
     combined_text = summary + " " + " ".join(c['body'] for c in comments)
     match = re.search(r"(ED-\d+)", combined_text)
     return match.group(1) if match else "N/A"
@@ -50,15 +49,19 @@ if response.status_code == 200:
             comments = fields.get('comment', {}).get('comments', [])
             ed_ticket = extract_ed_ticket(summary, comments)
 
-            print(f"Issue Key   : {issue['key']}")
-            print(f"Summary     : {summary}")
-            print(f"Status      : {fields['status']['name']}")
-            print(f"Reported by : {fields['reporter']['displayName']}")
-            print(f"Labels      : {fields.get('labels', [])}")
-            print(f"ED Ticket   : {ed_ticket}")
+            # Create ED Ticket URL
+            ed_ticket_url = f"{base_url}/browse/{ed_ticket}" if ed_ticket != "N/A" else None
+
+            print(f"Issue Key     : {issue['key']}")
+            print(f"Summary       : {summary}")
+            print(f"Status        : {fields['status']['name']}")
+            print(f"Reported by   : {fields['reporter']['displayName']}")
+            print(f"Labels        : {fields.get('labels', [])}")
+            print(f"ED Ticket     : {ed_ticket}")
+            print(f"ED Ticket URL : {ed_ticket_url}")
             print('-' * 40)
 
-            # Create JSON log for Kibana
+            # Create log entry
             log_entry = {
                 "issue_key": issue['key'],
                 "summary": summary,
@@ -66,6 +69,7 @@ if response.status_code == 200:
                 "reporter": fields['reporter']['displayName'],
                 "labels": fields.get('labels', []),
                 "ed_ticket": ed_ticket,
+                "ed_ticket_url": ed_ticket_url,
                 "created": fields['created'],
                 "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
             }
@@ -86,3 +90,4 @@ if response.status_code == 200:
 else:
     print(f"Failed to fetch issues: {response.status_code}")
     print(response.text)
+
