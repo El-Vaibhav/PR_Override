@@ -98,7 +98,7 @@ jenkins_url_pattern = re.compile(
 print("\n📦 Fetching Jenkins Console Output:\n")
 
 # Elasticsearch URL for Kibana ingestion
-ELASTIC_URL = "https://es-rke2.corp.thoughtspot.com/ed-override-logs_3/_doc"
+ELASTIC_URL = "https://es-rke2.corp.thoughtspot.com/ed-override-logs_4/_doc"
 valid_tickets = []
 
 for ticket in tickets_with_pipeline_link:
