@@ -2,23 +2,26 @@ pipeline {
     agent any
 
     environment {
-        JIRA_EMAIL = credentials('jira-email')           // Add as Jenkins credential
-        JIRA_API_TOKEN = credentials('jira-token')       // Add as Jenkins credential
-        JENKINS_USER = credentials('jenkins-user')       // Add as Jenkins credential
-        JENKINS_API_TOKEN = credentials('jenkins-token') // Add as Jenkins credential
+        JIRA_EMAIL = credentials('jira-email')           // Jenkins credential ID for JIRA email
+        JIRA_API_TOKEN = credentials('jira-token')       // Jenkins credential ID for JIRA API token
+        JENKINS_USER = credentials('jenkins-user')       // Jenkins credential ID for Jenkins username
+        JENKINS_API_TOKEN = credentials('jenkins-token') // Jenkins credential ID for Jenkins API token
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                git 'https://github.com/El-Vaibhav/PR_Override.git'
+                // Use script block for better error handling and future extensibility
+                script {
+                    git branch: 'main',
+                        url: 'https://github.com/El-Vaibhav/PR_Override.git'
+                }
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install requests'
+                sh 'pip3 install requests'
             }
         }
 
