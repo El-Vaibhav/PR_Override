@@ -11,6 +11,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                git branch: 'main',
                 git 'https://github.com/El-Vaibhav/PR_Override.git'
             }
         }
